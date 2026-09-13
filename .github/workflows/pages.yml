@@ -34,3 +34,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+      - name: Verify live Pages response
+        shell: bash
+        run: |
+          set -euo pipefail
+          page_url="${{ steps.deployment.outputs.page_url }}"
+          test -n "$page_url"
+          curl --fail --location --retry 5 --retry-delay 2 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 "$page_url" -o /tmp/pages-index.html
+          grep -Fq '<title>AI Engineering Mastery — Prove You Can Engineer It</title>' /tmp/pages-index.html
